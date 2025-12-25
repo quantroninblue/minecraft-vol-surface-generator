@@ -1,3 +1,4 @@
+
 import numpy as np
 from scipy.interpolate import griddata
 
@@ -10,4 +11,5 @@ class TemplateSurface:
     def __call__(self, Kq, Tq):
         pts = np.column_stack([self.K, self.T])
         qry = np.column_stack([Kq.flatten(), Tq.flatten()])
-        return griddata(pts, self.IV, qry, method='cubic').reshape(Kq.shape)
+        return griddata(pts, self.IV, qry, method='linear').reshape(Kq.shape)
+
