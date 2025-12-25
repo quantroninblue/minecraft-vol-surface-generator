@@ -1,19 +1,13 @@
 import numpy as np
+from scipy.interpolate import griddata
 
-def base_surface(K, T):
-    """
-    Smooth baseline implied vol surface.
-    K : moneyness (K / S)
-    T : maturity in years
-    """
+class TemplateSurface:
+    def __init__(self, K, T, IV):
+        self.K = K.flatten()
+        self.T = T.flatten()
+        self.IV = IV.flatten()
 
-    # ATM term structure
-    atm = 0.18 + 0.07 * np.sqrt(T)
-
-    # Equity-style skew
-    skew = -0.25 * (K - 1.0)
-
-    # Smile curvature
-    smile = 0.35 * (K - 1.0) ** 2
-
-    return atm + skew + smile
+    def __call__(self, Kq, Tq):
+        pts = np.column_stack([self.K, self.T])
+        qry = np.column_stack([Kq.flatten(), Tq.flatten()])
+        return griddata(pts, self.IV, qry, method='cubic').reshape(Kq.shape)
