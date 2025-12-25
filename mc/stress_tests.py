@@ -1,16 +1,17 @@
 import numpy as np
-from surfaces.procedural_surface import procedural_surface
+from mc.universe_sampler import sample_universe
+from strategies.delta_hedge import simulate_delta_hedge
 
-def calibrate_to_surface(K, T, IV_market, seeds=50):
-    best_seed = 0
-    best_error = np.inf
+def hostile_hedge_test(template, K, T, n_worlds=1000):
+    """
+    Runs delta hedging inside adversarial volatility universes.
+    Returns array of PnLs.
+    """
+    worlds = sample_universe(template, K, T, n_worlds=n_worlds, hostile=True)
+    pnls = []
 
-    for s in range(seeds):
-        IV_model = procedural_surface(K, T, seed=s)
-        err = np.mean((IV_market - IV_model)**2)
+    for w in worlds:
+        pnl = simulate_delta_hedge(seed=w["seed"])
+        pnls.append(pnl)
 
-        if err < best_error:
-            best_error = err
-            best_seed = s
-
-    return best_seed, best_error
+    return np.array(pnls)
